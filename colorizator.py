@@ -86,15 +86,44 @@ class MangaColorizator:
         processed_images = []
         pads = []
         
+        # First pass: get all processed images and find max dimensions
+        temp_processed = []
         for image in images:
             if apply_denoise:
                 image = self.denoiser.get_denoised_image(image, sigma=denoise_sigma)
             
             image, pad = resize_pad(image, size)
-            processed_images.append(transform(image))
-            pads.append(pad)
+            temp_processed.append((image, pad))
         
-        # Stack images into batch tensor
+        # Find maximum height and width across all processed images
+        max_height = max(img[0].shape[0] for img in temp_processed)
+        max_width = max(img[0].shape[1] for img in temp_processed)
+        
+        # Ensure dimensions are divisible by 32
+        max_height = max_height + (32 - max_height % 32) if max_height % 32 != 0 else max_height
+        max_width = max_width + (32 - max_width % 32) if max_width % 32 != 0 else max_width
+        
+        # Second pass: pad all images to uniform size
+        for image, original_pad in temp_processed:
+            # Pad to uniform size
+            height_diff = max_height - image.shape[0]
+            width_diff = max_width - image.shape[1]
+            
+            if height_diff > 0 or width_diff > 0:
+                # Add extra padding to reach uniform size
+                extra_pad_h = height_diff
+                extra_pad_w = width_diff
+                image = np.pad(image, ((0, extra_pad_h), (0, extra_pad_w), (0, 0)), 'constant', constant_values=1.0)
+                
+                # Update pad info to include both original and extra padding
+                updated_pad = (original_pad[0] + extra_pad_h, original_pad[1] + extra_pad_w)
+            else:
+                updated_pad = original_pad
+            
+            processed_images.append(transform(image))
+            pads.append(updated_pad)
+        
+        # Stack images into batch tensor (now all have same dimensions)
         self.current_images = torch.stack(processed_images).to(self.device)
         self.current_pads = pads
         
