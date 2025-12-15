@@ -16,6 +16,18 @@ python inference.py -p /folder/ -b 4 -g
 
 # Process 8 images simultaneously (needs more GPU memory)
 python inference.py -p /folder/ -b 8 -g
+
+# Basic PDF processing
+python inference.py -p manga.pdf
+
+# PDF with batch processing (20 pages at once)
+python inference.py -p manga.pdf -b 20
+
+# PDF with GPU and high resolution
+python inference.py -p manga.pdf -b 8 -g --pdf_dpi 200
+
+# PDF without creating output PDF (images only)
+python inference.py -p manga.pdf --no_pdf_output
 ```
 
 | Original      | Colorization      |
