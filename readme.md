@@ -5,8 +5,17 @@
 
 1. Download [generator](https://drive.google.com/file/d/1qmxUEKADkEM4iYLp1fpPLLKnfZ6tcF-t/view?usp=sharing) and [denoiser](https://drive.google.com/file/d/161oyQcYpdkVdw8gKz_MA8RD-Wtg9XDp3/view?usp=sharing) weights. Put generator and extractor weights in `networks` and denoiser weights in `denoising/models`.
 2. To colorize image or folder of images, use the following command:
+
 ```
-$ python inference.py -p "path to file or folder"
+Example scenarios:
+# Process 1 image at a time (original behavior)
+python inference.py -p /folder/ -b 1
+
+# Process 4 images simultaneously  
+python inference.py -p /folder/ -b 4 -g
+
+# Process 8 images simultaneously (needs more GPU memory)
+python inference.py -p /folder/ -b 8 -g
 ```
 
 | Original      | Colorization      |
